@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carrinho</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",sans-serif}</style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <header class="bg-gradient-to-r from-slate-900 to-slate-700 text-white">
+    <div class="max-w-5xl mx-auto px-4 py-8 flex items-center justify-between">
+      <h1 class="text-3xl font-extrabold"><a href="/">Mini E-commerce</a></h1>
+      <nav class="space-x-3">
+        <a href="/produtos" class="px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-sm font-semibold">Produtos</a>
+        <a href="/carrinho" class="px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-sm font-semibold">Carrinho</a>
+        <a href="/admin" class="px-3 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold">Admin</a>
+      </nav>
+    </div>
+  </header>
+  <main class="max-w-5xl mx-auto px-4 py-10">
+    <section class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-xl font-bold text-slate-800">Seu Carrinho</h2>
+      <pre id="itens" class="mt-4 bg-slate-50 rounded p-4 text-slate-700 overflow-auto"></pre>
+      <div class="mt-6 flex items-center gap-3">
+        <button id="pagar-cartao" class="px-4 py-2 bg-slate-900 text-white rounded-md font-semibold">Checkout Cartão</button>
+        <button id="pagar-boleto" class="px-4 py-2 bg-slate-100 text-slate-800 rounded-md font-semibold">Checkout Boleto</button>
+      </div>
+  <div id="resultado" class="mt-4"></div>
+    </section>
+  </main>
+  <script>
+    async function carregarCarrinho(){
+      const res = await fetch('/api/carrinho');
+      const data = await res.json();
+      const itens = data.itens || [];
+      const total = data.total || 0;
+      const el = document.getElementById('itens');
+      if(itens.length === 0){
+        el.innerHTML = '<span class="text-slate-500">Carrinho vazio</span>';
+        return;
+      }
+      el.innerHTML = itens.map(p => `
+        <div class="mb-2 pb-2 border-b">
+          <span class="font-bold text-slate-900">${p.nome}</span>
+          <span class="ml-2 text-emerald-700">R$ ${p.preco.toFixed(2)}</span>
+          <span class="ml-2 text-slate-500 text-xs">Estoque: ${p.estoque}</span>
+        </div>
+      `).join('') + `<div class="mt-4 text-lg font-bold text-slate-900">Total: R$ ${total.toFixed(2)}</div>`;
+    }
+    async function checkout(tipo){
+      const btnCartao = document.getElementById('pagar-cartao');
+      const btnBoleto = document.getElementById('pagar-boleto');
+      btnCartao.disabled = true;
+      btnBoleto.disabled = true;
+      btnCartao.classList.add('opacity-50','cursor-not-allowed');
+      btnBoleto.classList.add('opacity-50','cursor-not-allowed');
+      const resultado = document.getElementById('resultado');
+      resultado.innerHTML = `<div class="flex items-center gap-2 text-slate-500"><svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/></svg> Processando...</div>`;
+      try {
+        const res = await fetch(`/api/checkout?tipo=${tipo}`, { method: 'POST' });
+        const data = await res.json();
+        if(data.status === 'sucesso'){
+          resultado.innerHTML = `
+            <div class="bg-gradient-to-br from-emerald-100 to-white border border-emerald-300 rounded-xl p-6 shadow-lg animate-fade-in">
+              <div class="flex items-center gap-2 mb-2">
+                <svg class="text-emerald-500 animate-bounce" width="32" height="32" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 15-5-5 1.41-1.41L11 14.17l5.59-5.59L18 10l-7 7Z"/></svg>
+                <span class="text-lg font-bold text-emerald-700">Pedido finalizado!</span>
+              </div>
+              <div class="mb-2 text-slate-700"><span class="font-semibold">Cliente:</span> ${data.cliente.nome} &lt;${data.cliente.email}&gt;</div>
+              <div class="mb-2 text-slate-700"><span class="font-semibold">Pagamento:</span> ${data.pagamento}</div>
+              <div class="mb-2 text-slate-700 font-semibold">Itens:</div>
+              <ul class="mb-2">
+                ${data.itens.map(p => `<li class="mb-1 flex gap-2 items-center">
+                  <span class="font-bold text-slate-900">${p.nome}</span>
+                  <span class="text-emerald-700">R$ ${p.preco.toFixed(2)}</span>
+                  <span class="text-slate-500 text-xs">Estoque: ${p.estoque}</span>
+                </li>`).join('')}
+              </ul>
+              <div class="text-lg font-bold text-emerald-700">Total: R$ ${data.total.toFixed(2)}</div>
+              <div class="mt-4 flex justify-center">
+                <span class="text-emerald-500 animate-pulse text-xl">🎉</span>
+              </div>
+            </div>
+            <style>
+              @keyframes fade-in { from { opacity: 0; transform: scale(.95);} to { opacity: 1; transform: scale(1);} }
+              .animate-fade-in { animation: fade-in .7s cubic-bezier(.4,0,.2,1) both; }
+            </style>
+          `;
+        } else {
+          resultado.innerHTML = `<div class="bg-red-100 border border-red-300 rounded-xl p-4 text-red-700 animate-fade-in">${data.mensagem || 'Erro ao finalizar pedido.'}</div>`;
+        }
+      } catch(e){
+        resultado.innerHTML = `<div class="bg-red-100 border border-red-300 rounded-xl p-4 text-red-700 animate-fade-in">Erro de conexão.</div>`;
+      }
+      btnCartao.disabled = false;
+      btnBoleto.disabled = false;
+      btnCartao.classList.remove('opacity-50','cursor-not-allowed');
+      btnBoleto.classList.remove('opacity-50','cursor-not-allowed');
+      await carregarCarrinho();
+    }
+    document.getElementById('pagar-cartao').onclick = () => checkout('cartao');
+    document.getElementById('pagar-boleto').onclick = () => checkout('boleto');
+    carregarCarrinho();
+  </script>
+</body>
+</html>

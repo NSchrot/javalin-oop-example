@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Produtos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",sans-serif}</style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <header class="bg-gradient-to-r from-slate-900 to-slate-700 text-white">
+    <div class="max-w-5xl mx-auto px-4 py-8 flex items-center justify-between">
+      <h1 class="text-3xl font-extrabold"><a href="/">Mini E-commerce</a></h1>
+      <nav class="space-x-3">
+        <a href="/produtos" class="px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-sm font-semibold">Produtos</a>
+        <a href="/carrinho" class="px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-sm font-semibold">Carrinho</a>
+        <a href="/admin" class="px-3 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold">Admin</a>
+      </nav>
+    </div>
+  </header>
+  <main class="max-w-5xl mx-auto px-4 py-10">
+    <section class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-xl font-bold text-slate-800">Produtos</h2>
+      <div id="lista" class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+  </main>
+  <script>
+    async function carregarProdutos(){
+      const res = await fetch('/api/produtos');
+      const produtos = await res.json();
+      const lista = document.getElementById('lista');
+      lista.innerHTML = '';
+      for(const p of produtos){
+        const card = document.createElement('div');
+        card.className = 'border rounded-xl p-5 bg-white flex flex-col justify-between shadow hover:shadow-lg transition animate-fade-in';
+        card.innerHTML = `
+          <div>
+            <div class="text-lg font-bold text-slate-900">${p.nome}</div>
+            <div class="mt-1 text-slate-600">Preço: <span class="font-semibold text-emerald-700">R$ ${p.preco.toFixed(2)}</span></div>
+            <div class="text-slate-500 text-sm">Estoque: ${p.estoque}</div>
+          </div>
+          <div class="mt-4">
+            <button class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-semibold w-full">Adicionar ao carrinho</button>
+          </div>`;
+        const btn = card.querySelector('button');
+        btn.onclick = async () => {
+          btn.disabled = true;
+          btn.innerHTML = '<span class="flex items-center justify-center gap-2"><svg class="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/></svg>Adicionando...</span>';
+          try {
+            const r = await fetch(`/api/carrinho/adicionar?nome=${encodeURIComponent(p.nome)}`, { method: 'POST' });
+            const t = await r.text();
+            showToast(t.includes('Adicionado') ? 'Produto adicionado ao carrinho! 🎉' : t, t.includes('Adicionado') ? 'success' : 'error');
+          } catch(e){
+            showToast('Erro de conexão','error');
+          }
+          btn.disabled = false;
+          btn.innerHTML = 'Adicionar ao carrinho';
+        };
+        lista.appendChild(card);
+      }
+    const style = document.createElement('style');
+    style.textContent = `@keyframes fade-in { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: none;} } .animate-fade-in { animation: fade-in .5s cubic-bezier(.4,0,.2,1) both; }`;
+      document.head.appendChild(style);
+    }
+    function showToast(msg, type='success'){
+      let toast = document.createElement('div');
+      toast.className = `fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-white font-semibold animate-fade-in ${type==='success'?'bg-emerald-600':'bg-red-600'}`;
+      toast.innerHTML = `<span>${msg}</span>`;
+      document.body.appendChild(toast);
+      setTimeout(()=>{ toast.classList.add('opacity-0'); setTimeout(()=>toast.remove(),500); }, 2200);
+    }
+  carregarProdutos();
+  window.addEventListener('produtosAtualizados', carregarProdutos);
+  </script>
+</body>
+</html>

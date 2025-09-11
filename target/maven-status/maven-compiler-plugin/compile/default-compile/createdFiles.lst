@@ -1,0 +1,10 @@
+com/ifpr/ecommerce/models/Carrinho.class
+com/ifpr/ecommerce/models/Usuario.class
+com/ifpr/ecommerce/models/Administrador.class
+com/ifpr/ecommerce/Utils/JavalinUtils.class
+com/ifpr/ecommerce/models/abstracts/Pagamento.class
+com/ifpr/ecommerce/Main.class
+com/ifpr/ecommerce/models/PagamentoBoleto.class
+com/ifpr/ecommerce/models/Cliente.class
+com/ifpr/ecommerce/models/PagamentoCartao.class
+com/ifpr/ecommerce/models/Produto.class

@@ -1,0 +1,10 @@
+/home/aluno/zaza/javalin-oop-example/src/main/java/com/ifpr/ecommerce/Main.java
+/home/aluno/zaza/javalin-oop-example/src/main/java/com/ifpr/ecommerce/Utils/JavalinUtils.java
+/home/aluno/zaza/javalin-oop-example/src/main/java/com/ifpr/ecommerce/models/Administrador.java
+/home/aluno/zaza/javalin-oop-example/src/main/java/com/ifpr/ecommerce/models/Carrinho.java
+/home/aluno/zaza/javalin-oop-example/src/main/java/com/ifpr/ecommerce/models/Cliente.java
+/home/aluno/zaza/javalin-oop-example/src/main/java/com/ifpr/ecommerce/models/PagamentoBoleto.java
+/home/aluno/zaza/javalin-oop-example/src/main/java/com/ifpr/ecommerce/models/PagamentoCartao.java
+/home/aluno/zaza/javalin-oop-example/src/main/java/com/ifpr/ecommerce/models/Produto.java
+/home/aluno/zaza/javalin-oop-example/src/main/java/com/ifpr/ecommerce/models/Usuario.java
+/home/aluno/zaza/javalin-oop-example/src/main/java/com/ifpr/ecommerce/models/abstracts/Pagamento.java
